@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --dark: #0a0a0a;
+  --dark-secondary: #111111;
+  --dark-tertiary: #1a1a1a;
+  --accent: #e5e5e5;
+  --accent-muted: #888888;
+  --border-color: #222222;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-dark: var(--dark);
+  --color-dark-secondary: var(--dark-secondary);
+  --color-dark-tertiary: var(--dark-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-muted: var(--accent-muted);
+  --color-border: var(--border-color);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Hide default cursor on desktop */
+@media (min-width: 768px) {
+  * {
+    cursor: none !important;
+  }
+}
+
+/* Text stroke effect */
+.text-stroke {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4);
+  color: transparent;
+}
+
+/* Hero per-character stroke animation */
+.stroke-char {
+  position: relative;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4);
+  color: transparent;
+  display: inline-block;
+}
+
+.stroke-char::after {
+  content: attr(data-char);
+  position: absolute;
+  left: 0;
+  top: 0;
+  -webkit-text-stroke: 0;
+  color: transparent;
+  z-index: -1;
+  animation: char-fill 0.4s ease forwards;
+  animation-delay: inherit;
+}
+
+@keyframes char-fill {
+  0% {
+    color: transparent;
+  }
+  100% {
+    color: #ffffff;
+  }
+}
+
+/* Marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Magnetic element smooth transition */
+.magnetic-element {
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
