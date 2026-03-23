@@ -161,7 +161,7 @@ export default function ContactSection() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full bg-transparent border-b border-border py-3 text-white focus:border-white outline-none transition-colors"
+                className="w-full bg-transparent border-b border-border py-3 text-white focus:border-accent outline-none transition-colors"
                 placeholder="Your name"
               />
             </div>
@@ -180,7 +180,7 @@ export default function ContactSection() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full bg-transparent border-b border-border py-3 text-white focus:border-white outline-none transition-colors"
+                className="w-full bg-transparent border-b border-border py-3 text-white focus:border-accent outline-none transition-colors"
                 placeholder="your@email.com"
               />
             </div>
@@ -198,7 +198,7 @@ export default function ContactSection() {
                 name="countryCode"
                 value={formData.countryCode}
                 onChange={handleChange}
-                className="bg-transparent border-b border-border py-3 text-white focus:border-white outline-none transition-colors w-32"
+                className="bg-transparent border-b border-border py-3 text-white focus:border-accent outline-none transition-colors w-32"
               >
                 {countryCodes.map((c) => (
                   <option key={c.code} value={c.code} className="bg-dark">
@@ -212,7 +212,7 @@ export default function ContactSection() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="flex-1 bg-transparent border-b border-border py-3 text-white focus:border-white outline-none transition-colors"
+                className="flex-1 bg-transparent border-b border-border py-3 text-white focus:border-accent outline-none transition-colors"
                 placeholder="Phone number"
               />
             </div>
@@ -231,7 +231,7 @@ export default function ContactSection() {
               value={formData.additionalInfo}
               onChange={handleChange}
               rows={4}
-              className="w-full bg-transparent border-b border-border py-3 text-white focus:border-white outline-none transition-colors resize-none"
+              className="w-full bg-transparent border-b border-border py-3 text-white focus:border-accent outline-none transition-colors resize-none"
               placeholder="Anything else you'd like to share..."
             />
           </div>
@@ -243,7 +243,7 @@ export default function ContactSection() {
               name="requestCallback"
               checked={formData.requestCallback}
               onChange={handleChange}
-              className="w-4 h-4 accent-white bg-transparent border border-border rounded"
+              className="w-4 h-4 accent-yellow-400 bg-transparent border border-border rounded"
             />
             <label
               htmlFor="requestCallback"
@@ -259,7 +259,7 @@ export default function ContactSection() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="px-10 py-4 bg-white text-black font-medium rounded-full hover:bg-accent-muted transition-colors text-sm"
+            className="px-10 py-4 bg-accent text-[#0c0c0c] font-medium rounded-full hover:bg-accent/80 transition-colors text-sm"
             {...buttonHover}
           >
             Call me back

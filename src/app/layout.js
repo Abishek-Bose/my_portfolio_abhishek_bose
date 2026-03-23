@@ -52,7 +52,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="bg-[#0a0a0a] text-white min-h-screen">
+      <body className="bg-[#0c0c0c] text-white min-h-screen">
         <ClientProviders>
           <CustomCursor />
           <Navbar />

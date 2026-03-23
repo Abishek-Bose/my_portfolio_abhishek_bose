@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --dark: #0a0a0a;
-  --dark-secondary: #111111;
-  --dark-tertiary: #1a1a1a;
-  --accent: #e5e5e5;
-  --accent-muted: #888888;
-  --border-color: #222222;
+  --background: #0c0c0c;
+  --foreground: #e8e6e3;
+  --dark: #080808;
+  --dark-secondary: #0f0f0f;
+  --dark-tertiary: #161616;
+  /* Premium warm gold accent */
+  --accent: #c9a96e;
+  --accent-muted: #6b6b6b;
+  --border-color: #1e1e1e;
 }
 
 @theme inline {
@@ -32,6 +33,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
 /* Hide default cursor on desktop */
@@ -41,39 +43,19 @@ body {
   }
 }
 
+/* Premium text gradient — warm white to gold */
+.text-gradient-primary {
+  background: linear-gradient(180deg, #f5f0e8 0%, #c9a96e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
 /* Text stroke effect */
 .text-stroke {
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4);
+  -webkit-text-stroke: 1.5px rgba(201, 169, 110, 0.4);
   color: transparent;
-}
-
-/* Hero per-character stroke animation */
-.stroke-char {
-  position: relative;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4);
-  color: transparent;
-  display: inline-block;
-}
-
-.stroke-char::after {
-  content: attr(data-char);
-  position: absolute;
-  left: 0;
-  top: 0;
-  -webkit-text-stroke: 0;
-  color: transparent;
-  z-index: -1;
-  animation: char-fill 0.4s ease forwards;
-  animation-delay: inherit;
-}
-
-@keyframes char-fill {
-  0% {
-    color: transparent;
-  }
-  100% {
-    color: #ffffff;
-  }
 }
 
 /* Marquee animation */
@@ -90,28 +72,28 @@ body {
   animation: marquee 20s linear infinite;
 }
 
-/* Selection styling */
+/* Selection styling — warm gold */
 ::selection {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: rgba(201, 169, 110, 0.2);
+  color: #c9a96e;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: #2a2a2a;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #3a3a3a;
 }
 
 /* Magnetic element smooth transition */

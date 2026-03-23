@@ -30,7 +30,7 @@ export default function Footer() {
               {...linkHover}
             >
               [LINKEDIN]
-              <span className="absolute -bottom-1 left-0 h-px bg-white origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              <span className="absolute -bottom-1 left-0 h-px bg-accent origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </a>
             <a
               href={siteConfig.socials.github}
@@ -41,7 +41,7 @@ export default function Footer() {
               {...linkHover}
             >
               [GITHUB]
-              <span className="absolute -bottom-1 left-0 h-px bg-white origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              <span className="absolute -bottom-1 left-0 h-px bg-accent origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </a>
             <a
               href={siteConfig.resumeUrl}
@@ -51,7 +51,7 @@ export default function Footer() {
               {...linkHover}
             >
               [RESUME]
-              <span className="absolute -bottom-1 left-0 h-px bg-white origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+              <span className="absolute -bottom-1 left-0 h-px bg-accent origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
             </a>
           </div>
         </div>
@@ -61,7 +61,7 @@ export default function Footer() {
           <a
             ref={talkRef}
             href="#contact"
-            className="text-white hover:text-accent-muted transition-colors text-sm font-medium"
+            className="text-accent hover:text-accent/70 transition-colors text-sm font-medium"
             {...linkHover}
           >
             {"[Let's Talk \u2192]"}

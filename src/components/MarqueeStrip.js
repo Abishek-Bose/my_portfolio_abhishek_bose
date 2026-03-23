@@ -14,7 +14,7 @@ export default function MarqueeStrip() {
             className="text-4xl md:text-6xl lg:text-7xl font-bold uppercase text-stroke mx-8 shrink-0"
           >
             {text}
-            <span className="mx-8 text-accent-muted">&#x2022;</span>
+            <span className="mx-8 text-accent">&#x2022;</span>
           </span>
         ))}
         {/* Duplicate for seamless loop */}
@@ -24,7 +24,7 @@ export default function MarqueeStrip() {
             className="text-4xl md:text-6xl lg:text-7xl font-bold uppercase text-stroke mx-8 shrink-0"
           >
             {text}
-            <span className="mx-8 text-accent-muted">&#x2022;</span>
+            <span className="mx-8 text-accent">&#x2022;</span>
           </span>
         ))}
       </div>

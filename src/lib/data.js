@@ -42,31 +42,31 @@ export const services = [
 
 export const projects = [
   {
-    title: "Project One",
+    title: "Bizotic Technologies",
     description:
-      "A comprehensive platform revolutionizing the way users interact with modern web technologies.",
-    image: "/images/project1.jpg",
+      "Built a full-stack digital transformation platform for an IT services company, featuring modern UI, service showcases, and client consultation booking.",
+    animation: "/images/web1.json",
     url: "#",
   },
   {
-    title: "Project Two",
+    title: "Demo & Co. Advocates",
     description:
-      "Crafted seamless user experiences with an intuitive, visually striking interface.",
-    image: "/images/project2.jpg",
+      "Designed and developed a professional law firm website with multi-jurisdiction support across Kolkata and Delhi, practice area pages, and team profiles.",
+    animation: "/images/web3.json",
     url: "#",
   },
   {
-    title: "Project Three",
+    title: "Oxford Stone Clinic",
     description:
-      "Built a marketing agency showcase with a stunning interface that converts visitors into clients.",
-    image: "/images/project3.jpg",
+      "Created a healthcare platform for Dr. Demo Bose's urology practice, featuring appointment booking, robotic surgery information, and patient resources.",
+    animation: "/images/web6.json",
     url: "#",
   },
   {
-    title: "Project Four",
+    title: "Bizotic Supervision",
     description:
-      "Digital product development and consulting platform delivering end-to-end solutions.",
-    image: "/images/project4.jpg",
+      "Developed a comprehensive business registration and compliance portal offering startup incorporation, tax filing, and government registration services.",
+    animation: "/images/web7.json",
     url: "#",
   },
 ];

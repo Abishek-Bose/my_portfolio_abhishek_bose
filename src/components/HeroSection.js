@@ -40,7 +40,7 @@ export default function HeroSection() {
     if (spotlightRef.current) {
       const localX = e.clientX - rect.left;
       const localY = e.clientY - rect.top;
-      spotlightRef.current.style.background = `radial-gradient(600px circle at ${localX}px ${localY}px, rgba(255,255,255,0.03), transparent 70%)`;
+      spotlightRef.current.style.background = `radial-gradient(600px circle at ${localX}px ${localY}px, rgba(201,169,110,0.04), transparent 70%)`;
     }
   }, []);
 
@@ -72,7 +72,7 @@ export default function HeroSection() {
       className="min-h-screen flex flex-col justify-center px-6 md:px-12 relative overflow-hidden"
     >
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-[#111111]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0c0c0c] via-[#0c0c0c] to-[#0f0f0f]" />
 
       {/* Spotlight that follows mouse */}
       <div
@@ -107,14 +107,12 @@ export default function HeroSection() {
           {displayName.split("").map((char, i) => (
             <motion.span
               key={i}
-              className="inline-block origin-bottom stroke-char"
-              data-char={char}
-              style={{ animationDelay: `${1 + i * 0.08}s` }}
+              className="inline-block origin-bottom text-gradient-primary"
               whileHover={{
                 scaleY: 1.25,
                 scaleX: 1.1,
                 y: -10,
-                color: "#d1d5db",
+                filter: "brightness(1.3)",
               }}
               transition={{
                 type: "spring",
@@ -148,7 +146,7 @@ export default function HeroSection() {
           <div className="flex flex-col items-start md:items-end gap-3 text-white">
             <Link
               href="/about-me"
-              className="text-2xl md:text-3xl font-medium tracking-wide hover:text-gray-300 transition-colors"
+              className="text-2xl md:text-3xl font-medium tracking-wide hover:text-accent transition-colors"
               {...linkHover}
             >
               {`[\u2192 Know more about me]`}

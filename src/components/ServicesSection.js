@@ -13,7 +13,7 @@ export default function ServicesSection() {
       <div className="max-w-5xl mx-auto">
         <SectionReveal>
           <h2 className="text-4xl md:text-6xl font-bold mb-4">
-            What I <span className="text-stroke">DO</span>
+            What I <span className="text-accent">DO</span>
           </h2>
           <p className="text-accent-muted text-lg mb-16">Transformation</p>
         </SectionReveal>
@@ -34,7 +34,7 @@ export default function ServicesSection() {
               {...linkHover}
             >
               {/* Left accent border */}
-              <div className="absolute left-0 top-0 w-[2px] h-0 bg-white group-hover:h-full transition-all duration-500" />
+              <div className="absolute left-0 top-0 w-[2px] h-0 bg-accent group-hover:h-full transition-all duration-500" />
 
               <span className="text-accent-muted text-sm font-mono">
                 {service.number}

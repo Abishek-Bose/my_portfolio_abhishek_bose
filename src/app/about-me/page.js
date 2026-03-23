@@ -15,21 +15,44 @@ const skills = [
 const experience = [
   {
     role: "Full Stack Developer",
-    company: "Your Company",
-    period: "2023 — Present",
-    description: "Building scalable web applications and leading frontend architecture decisions.",
+    company: "Bizotic Technologies",
+    companyUrl: "http://bizotictech.com/",
+    period: "Feb 2026 \u2014 Present",
+    description:
+      "Leading full-stack development for enterprise-grade web applications, architecting scalable solutions, and driving product delivery for diverse clients.",
+    projects: [
+      {
+        name: "Bizotic Supervision",
+        detail: "Built from scratch \u2014 a comprehensive business registration and compliance services platform.",
+        tech: ["Next.js", "React", "Tailwind CSS", "Node.js"],
+        url: "https://www.bizoticsupervision.in/",
+      },
+      {
+        name: "Enterprise CRM System",
+        detail: "Currently developing a role-based CRM with 19 database models, 37 API routes, 29 pages, and 4 dashboards (Admin, BDM, Leader, Member). Features include task & team management, billing, Cloudinary file uploads, real-time notifications, revenue analytics, and CSV/PDF export.",
+        tech: ["Next.js 16", "React 19", "Prisma 7", "Tailwind CSS 4", "JWT Auth", "Recharts", "Cloudinary", "Nodemailer"],
+      },
+    ],
   },
   {
-    role: "Software Developer",
-    company: "Previous Company",
-    period: "2021 — 2023",
-    description: "Developed and maintained multiple client-facing applications using React and Node.js.",
-  },
-  {
-    role: "Junior Developer",
-    company: "First Company",
-    period: "2020 — 2021",
-    description: "Started career building responsive websites and learning modern web technologies.",
+    role: "Freelance Web Developer",
+    company: "Self-Employed",
+    period: "Sep 2024 \u2014 Jan 2026",
+    description:
+      "Delivered end-to-end web solutions for multiple clients, handling everything from architecture and design to deployment and maintenance.",
+    projects: [
+      {
+        name: "Inkosathi",
+        detail: "Built from scratch \u2014 a complete client website with modern UI and responsive design.",
+        tech: ["Next.js", "React", "Tailwind CSS"],
+        url: "https://www.inkosathi.com/",
+      },
+      {
+        name: "Student-Teacher-Parent Management System",
+        detail: "A full-stack management platform for educational institutions with role-based access, attendance tracking, and reporting.",
+        tech: ["React", "Python", "PostgreSQL", "AWS S3", "REST API"],
+      },
+    ],
   },
 ];
 
@@ -62,7 +85,7 @@ export default function AboutMe() {
             </motion.p>
             <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-bold mb-8">
               Know more about{" "}
-              <span className="text-stroke">me</span>
+              <span className="text-accent">me</span>
             </motion.h1>
             <motion.p variants={itemVariants} className="text-accent-muted text-lg md:text-xl max-w-3xl leading-relaxed">
               I&apos;m {siteConfig.name}, a {siteConfig.title} who loves turning complex
@@ -78,7 +101,7 @@ export default function AboutMe() {
         <div className="max-w-5xl mx-auto">
           <SectionReveal>
             <h2 className="text-3xl md:text-5xl font-bold mb-12">
-              Skills & <span className="text-stroke">Technologies</span>
+              Skills & <span className="text-accent">Technologies</span>
             </h2>
           </SectionReveal>
 
@@ -132,10 +155,62 @@ export default function AboutMe() {
                 </span>
                 <div>
                   <h3 className="text-xl font-semibold">{exp.role}</h3>
-                  <p className="text-accent-muted text-sm mt-1">{exp.company}</p>
+                  {exp.companyUrl ? (
+                    <a
+                      href={exp.companyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent text-sm mt-1 inline-block hover:underline"
+                    >
+                      {exp.company}
+                    </a>
+                  ) : (
+                    <p className="text-accent-muted text-sm mt-1">{exp.company}</p>
+                  )}
                   <p className="text-accent-muted text-sm mt-3 leading-relaxed">
                     {exp.description}
                   </p>
+
+                  {/* Project cards */}
+                  {exp.projects && (
+                    <div className="mt-6 space-y-5">
+                      {exp.projects.map((project) => (
+                        <div
+                          key={project.name}
+                          className="border border-border rounded-lg p-4 bg-dark-tertiary/50 hover:border-accent/20 transition-colors"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-sm font-semibold text-white">
+                              {project.name}
+                            </h4>
+                            {project.url && (
+                              <a
+                                href={project.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-accent text-xs hover:underline"
+                              >
+                                {"View \u2197"}
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-accent-muted text-xs leading-relaxed mb-3">
+                            {project.detail}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {project.tech.map((t) => (
+                              <span
+                                key={t}
+                                className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-accent/20 text-accent"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
