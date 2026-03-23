@@ -30,7 +30,8 @@ export default function ServicesSection() {
                 delay: index * 0.1,
                 ease: "easeOut",
               }}
-              className="group relative border-t border-border py-8 md:py-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-12 hover:bg-dark-secondary/50 transition-colors px-4 -mx-4 rounded-lg"
+              whileTap={{ scale: 0.98, backgroundColor: "rgba(15,15,15,0.5)" }}
+              className="group relative border-t border-border py-8 md:py-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-12 hover:bg-dark-secondary/50 active:bg-dark-secondary/50 transition-colors px-4 -mx-4 rounded-lg"
               {...linkHover}
             >
               {/* Left accent border */}

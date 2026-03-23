@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 import { projects } from "@/lib/data";
@@ -10,6 +10,14 @@ import { useCursor } from "@/lib/CursorContext";
 function ProjectCard({ project, index }) {
   const { setCursorType } = useCursor();
   const [animationData, setAnimationData] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsMobile(window.innerWidth < 768);
+    }
+  }, []);
 
   useEffect(() => {
     if (project.animation) {
@@ -20,6 +28,7 @@ function ProjectCard({ project, index }) {
     }
   }, [project.animation]);
 
+  // Desktop: mouse-driven 3D tilt
   const handleCardMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 12;
@@ -34,8 +43,26 @@ function ProjectCard({ project, index }) {
     setCursorType("default");
   };
 
+  // Mobile: touch-driven 3D tilt
+  const handleTouchMove = (e) => {
+    if (!cardRef.current || !e.touches[0]) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = ((touch.clientX - rect.left) / rect.width - 0.5) * 10;
+    const y = ((touch.clientY - rect.top) / rect.height - 0.5) * -10;
+    cardRef.current.style.transform = `perspective(800px) rotateY(${x}deg) rotateX(${y}deg) translateY(-3px)`;
+    cardRef.current.style.transition = "transform 0.1s ease";
+  };
+
+  const handleTouchEnd = () => {
+    if (!cardRef.current) return;
+    cardRef.current.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px)";
+    cardRef.current.style.transition = "transform 0.5s ease";
+  };
+
   return (
     <motion.a
+      ref={cardRef}
       href={project.url}
       target={project.url !== "#" ? "_blank" : undefined}
       rel={project.url !== "#" ? "noopener noreferrer" : undefined}
@@ -47,10 +74,13 @@ function ProjectCard({ project, index }) {
         delay: index * 0.15,
         ease: "easeOut",
       }}
-      onMouseMove={handleCardMouseMove}
-      onMouseEnter={() => setCursorType("project")}
-      onMouseLeave={handleCardMouseLeave}
-      className="group block rounded-xl overflow-hidden bg-dark-tertiary border border-border hover:border-accent/30 transition-colors"
+      whileTap={{ scale: 0.97 }}
+      onMouseMove={!isMobile ? handleCardMouseMove : undefined}
+      onMouseEnter={!isMobile ? () => setCursorType("project") : undefined}
+      onMouseLeave={!isMobile ? handleCardMouseLeave : undefined}
+      onTouchMove={isMobile ? handleTouchMove : undefined}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
+      className="group block rounded-xl overflow-hidden bg-dark-tertiary border border-border hover:border-accent/30 active:border-accent/30 transition-colors"
       style={{ transformStyle: "preserve-3d" }}
     >
       {/* Animation container */}
@@ -60,7 +90,7 @@ function ProjectCard({ project, index }) {
             animationData={animationData}
             loop
             autoplay
-            className="w-full h-full object-contain p-4 opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+            className="w-full h-full object-contain p-4 opacity-80 group-hover:opacity-100 group-active:opacity-100 group-hover:scale-105 group-active:scale-105 transition-all duration-500"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-accent/20 text-6xl font-bold">
@@ -70,7 +100,7 @@ function ProjectCard({ project, index }) {
       </div>
 
       <div className="p-6">
-        <h3 className="text-xl font-semibold mb-2 group-hover:text-accent transition-colors">
+        <h3 className="text-xl font-semibold mb-2 group-hover:text-accent group-active:text-accent transition-colors">
           {project.title}
         </h3>
         <p className="text-accent-muted text-sm leading-relaxed">

@@ -259,7 +259,7 @@ export default function ContactSection() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="px-10 py-4 bg-accent text-[#0c0c0c] font-medium rounded-full hover:bg-accent/80 transition-colors text-sm"
+            className="px-10 py-4 bg-accent text-[#0c0c0c] font-medium rounded-full hover:bg-accent/80 active:bg-accent/80 active:scale-95 transition-all text-sm"
             {...buttonHover}
           >
             Call me back

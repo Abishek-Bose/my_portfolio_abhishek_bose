@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { siteConfig } from "@/lib/data";
 import { useCursorHover } from "@/lib/CursorContext";
 
@@ -28,8 +28,24 @@ export default function HeroSection() {
   const nameRef = useRef(null);
   const spotlightRef = useRef(null);
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const linkHover = useCursorHover("link");
 
+  // Scroll-based parallax for mobile
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const scrollParallaxY = useTransform(scrollYProgress, [0, 1], [0, -80]);
+  const scrollOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  // Detect mobile
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
+  // Desktop: mouse tracking
   const handleMouseMove = useCallback((e) => {
     if (!sectionRef.current) return;
     const rect = sectionRef.current.getBoundingClientRect();
@@ -51,16 +67,31 @@ export default function HeroSection() {
     }
   }, []);
 
+  // Mobile: device orientation (gyroscope) parallax
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section || typeof window === "undefined" || window.innerWidth < 768) return;
+    if (typeof window === "undefined") return;
 
-    section.addEventListener("mousemove", handleMouseMove, { passive: true });
-    section.addEventListener("mouseleave", handleMouseLeave);
+    if (window.innerWidth >= 768) {
+      const section = sectionRef.current;
+      if (!section) return;
+      section.addEventListener("mousemove", handleMouseMove, { passive: true });
+      section.addEventListener("mouseleave", handleMouseLeave);
+      return () => {
+        section.removeEventListener("mousemove", handleMouseMove);
+        section.removeEventListener("mouseleave", handleMouseLeave);
+      };
+    }
 
+    // Mobile gyroscope
+    const handleOrientation = (e) => {
+      const x = Math.max(-1, Math.min(1, (e.gamma || 0) / 30));
+      const y = Math.max(-1, Math.min(1, (e.beta || 0) / 30));
+      setMouseOffset({ x, y });
+    };
+
+    window.addEventListener("deviceorientation", handleOrientation, { passive: true });
     return () => {
-      section.removeEventListener("mousemove", handleMouseMove);
-      section.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("deviceorientation", handleOrientation);
     };
   }, [handleMouseMove, handleMouseLeave]);
 
@@ -74,10 +105,10 @@ export default function HeroSection() {
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0c0c0c] via-[#0c0c0c] to-[#0f0f0f]" />
 
-      {/* Spotlight that follows mouse */}
+      {/* Spotlight — desktop only */}
       <div
         ref={spotlightRef}
-        className="absolute inset-0 pointer-events-none z-[1]"
+        className="absolute inset-0 pointer-events-none z-[1] hidden md:block"
       />
 
       <motion.div
@@ -85,6 +116,7 @@ export default function HeroSection() {
         initial="hidden"
         animate="visible"
         className="w-full relative z-10 flex flex-col max-w-[1400px] mx-auto mt-20"
+        style={isMobile ? { y: scrollParallaxY, opacity: scrollOpacity } : undefined}
       >
         {/* Greeting */}
         <motion.p
@@ -94,11 +126,11 @@ export default function HeroSection() {
           {"Hi, I'm"}
         </motion.p>
 
-        {/* Giant Name with per-character hover animation */}
+        {/* Giant Name — parallax on all devices, hover on desktop, tap on mobile */}
         <motion.h1
           ref={nameRef}
           variants={itemVariants}
-          className="flex text-[18vw] md:text-[14vw] lg:text-[16vw] font-bold tracking-tighter leading-none text-white w-full cursor-default"
+          className="flex flex-wrap text-[18vw] md:text-[14vw] lg:text-[16vw] font-bold tracking-tighter leading-none text-white w-full cursor-default"
           style={{
             transform: `translate(${mouseOffset.x * 15}px, ${mouseOffset.y * 10}px)`,
             transition: "transform 0.15s ease-out",
@@ -108,10 +140,20 @@ export default function HeroSection() {
             <motion.span
               key={i}
               className="inline-block origin-bottom text-gradient-primary"
-              whileHover={{
-                scaleY: 1.25,
-                scaleX: 1.1,
-                y: -10,
+              whileHover={
+                !isMobile
+                  ? {
+                      scaleY: 1.25,
+                      scaleX: 1.1,
+                      y: -10,
+                      filter: "brightness(1.3)",
+                    }
+                  : undefined
+              }
+              whileTap={{
+                scaleY: 1.2,
+                scaleX: 1.08,
+                y: -8,
                 filter: "brightness(1.3)",
               }}
               transition={{
@@ -146,7 +188,7 @@ export default function HeroSection() {
           <div className="flex flex-col items-start md:items-end gap-3 text-white">
             <Link
               href="/about-me"
-              className="text-2xl md:text-3xl font-medium tracking-wide hover:text-accent transition-colors"
+              className="text-2xl md:text-3xl font-medium tracking-wide hover:text-accent active:text-accent transition-colors"
               {...linkHover}
             >
               {`[\u2192 Know more about me]`}

@@ -26,7 +26,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
-              className="relative group text-accent-muted hover:text-white transition-colors text-sm"
+              className="relative group text-accent-muted hover:text-white active:text-white transition-colors text-sm"
               {...linkHover}
             >
               [LINKEDIN]
@@ -37,7 +37,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
-              className="relative group text-accent-muted hover:text-white transition-colors text-sm"
+              className="relative group text-accent-muted hover:text-white active:text-white transition-colors text-sm"
               {...linkHover}
             >
               [GITHUB]
@@ -47,7 +47,7 @@ export default function Footer() {
               href={siteConfig.resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative group text-accent-muted hover:text-white transition-colors text-sm"
+              className="relative group text-accent-muted hover:text-white active:text-white transition-colors text-sm"
               {...linkHover}
             >
               [RESUME]
@@ -61,7 +61,7 @@ export default function Footer() {
           <a
             ref={talkRef}
             href="#contact"
-            className="text-accent hover:text-accent/70 transition-colors text-sm font-medium"
+            className="text-accent hover:text-accent/70 active:text-accent/70 transition-colors text-sm font-medium"
             {...linkHover}
           >
             {"[Let's Talk \u2192]"}

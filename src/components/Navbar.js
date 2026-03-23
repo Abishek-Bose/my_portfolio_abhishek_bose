@@ -31,7 +31,7 @@ export default function Navbar() {
         <a
           ref={logoRef}
           href="/"
-          className="text-lg font-bold tracking-widest text-white hover:text-accent transition-colors"
+          className="text-lg font-bold tracking-widest text-white hover:text-accent active:text-accent transition-colors"
           {...linkHover}
         >
           [{siteConfig.fullName}]
@@ -42,7 +42,7 @@ export default function Navbar() {
             href={siteConfig.resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="relative group text-sm text-accent-muted hover:text-white transition-colors"
+            className="relative group text-sm text-accent-muted hover:text-white active:text-white transition-colors"
             {...linkHover}
           >
             [RESUME]
