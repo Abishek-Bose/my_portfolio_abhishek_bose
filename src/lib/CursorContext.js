@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useCallback, useRef, useEffect } f
 const CursorContext = createContext({
   cursorType: "default",
   setCursorType: () => {},
+  targetElement: { current: null },
   magneticElements: { current: [] },
   registerMagnetic: () => {},
   unregisterMagnetic: () => {},
@@ -12,6 +13,7 @@ const CursorContext = createContext({
 
 export function CursorProvider({ children }) {
   const [cursorType, setCursorType] = useState("default");
+  const targetElement = useRef(null);
   const magneticElements = useRef([]);
 
   const registerMagnetic = useCallback((element, strength = 0.3) => {
@@ -31,6 +33,7 @@ export function CursorProvider({ children }) {
       value={{
         cursorType,
         setCursorType,
+        targetElement,
         magneticElements,
         registerMagnetic,
         unregisterMagnetic,
@@ -46,10 +49,16 @@ export function useCursor() {
 }
 
 export function useCursorHover(type = "link") {
-  const { setCursorType } = useCursor();
+  const { setCursorType, targetElement } = useCursor();
   return {
-    onMouseEnter: () => setCursorType(type),
-    onMouseLeave: () => setCursorType("default"),
+    onMouseEnter: (e) => {
+      setCursorType(type);
+      targetElement.current = e.currentTarget;
+    },
+    onMouseLeave: () => {
+      setCursorType("default");
+      targetElement.current = null;
+    },
   };
 }
 

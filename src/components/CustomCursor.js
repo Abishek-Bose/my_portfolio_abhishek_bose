@@ -3,39 +3,53 @@
 import { useEffect, useRef, useState } from "react";
 import { useCursor } from "@/lib/CursorContext";
 
-const CURSOR_SIZES = {
-  default: 32,
-  link: 56,
-  project: 80,
-  text: 4,
-  button: 56,
-};
-
-const BLEND_MODES = {
-  default: "normal",
-  link: "difference",
-  project: "difference",
-  text: "normal",
-  button: "difference",
-};
-
+const CORNER_SIZE = 12;
+const BORDER_WIDTH = 3;
+const PARALLAX_STRENGTH = 5e-5;
 const MAGNETIC_THRESHOLD = 100;
+const MAGNETIC_RELEASE_LERP = 0.06;
+const SPIN_DURATION = 2; // seconds per full rotation
+
+// Default idle offsets for corners relative to container center
+// Reference: TL=-1.5*12, TR=0.5*12, etc.
+const DEFAULT_OFFSETS = [
+  { x: -1.5 * CORNER_SIZE, y: -1.5 * CORNER_SIZE }, // TL
+  { x: 0.5 * CORNER_SIZE, y: -1.5 * CORNER_SIZE },  // TR
+  { x: 0.5 * CORNER_SIZE, y: 0.5 * CORNER_SIZE },   // BR
+  { x: -1.5 * CORNER_SIZE, y: 0.5 * CORNER_SIZE },  // BL
+];
 
 export default function CustomCursor() {
-  const { cursorType, magneticElements } = useCursor();
-  const outerRef = useRef(null);
-  const innerRef = useRef(null);
+  const { cursorType, targetElement, magneticElements } = useCursor();
+  const containerRef = useRef(null);
+  const cornerRefs = useRef([null, null, null, null]);
+  const dotRef = useRef(null);
   const labelRef = useRef(null);
-  const mousePos = useRef({ x: -100, y: -100 });
-  const outerPos = useRef({ x: -100, y: -100 });
-  const innerPos = useRef({ x: -100, y: -100 });
 
-  // Start at 45 degrees to match the diamond look
-  const rotation = useRef(45);
+  const mousePos = useRef({ x: 0, y: 0 });
+  const containerPos = useRef({ x: 0, y: 0 });
+  const firstMove = useRef(true);
+  const cornerOffsets = useRef(
+    DEFAULT_OFFSETS.map((o) => ({ x: o.x, y: o.y }))
+  );
+
+  const rotation = useRef(0);
   const rafId = useRef(null);
   const visible = useRef(false);
   const clicking = useRef(false);
+  const containerScale = useRef(1);
+  const dotScaleVal = useRef(1);
+  const dotOpacity = useRef(1);
+
+  const magneticOffset = useRef({ x: 0, y: 0 });
+  const wasInMagneticZone = useRef(false);
+
   const [isMobile, setIsMobile] = useState(true);
+
+  const cursorTypeRef = useRef(cursorType);
+  useEffect(() => {
+    cursorTypeRef.current = cursorType;
+  }, [cursorType]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -47,23 +61,25 @@ export default function CustomCursor() {
 
     const handleMouseMove = (e) => {
       mousePos.current = { x: e.clientX, y: e.clientY };
-      if (!visible.current && outerRef.current) {
+      // Jump to position on first move (no fly-in)
+      if (firstMove.current) {
+        firstMove.current = false;
+        containerPos.current = { x: e.clientX, y: e.clientY };
+      }
+      if (!visible.current && containerRef.current) {
         visible.current = true;
-        outerRef.current.style.opacity = "1";
-        innerRef.current.style.opacity = "1";
+        containerRef.current.style.opacity = "1";
       }
     };
 
     const handleMouseLeave = () => {
       visible.current = false;
-      if (outerRef.current) outerRef.current.style.opacity = "0";
-      if (innerRef.current) innerRef.current.style.opacity = "0";
+      if (containerRef.current) containerRef.current.style.opacity = "0";
     };
 
     const handleMouseEnter = () => {
       visible.current = true;
-      if (outerRef.current) outerRef.current.style.opacity = "1";
-      if (innerRef.current) innerRef.current.style.opacity = "1";
+      if (containerRef.current) containerRef.current.style.opacity = "1";
     };
 
     const handleMouseDown = () => {
@@ -78,7 +94,8 @@ export default function CustomCursor() {
       let targetX = mousePos.current.x;
       let targetY = mousePos.current.y;
 
-      // Magnetic pull
+      // --- Magnetic pull with elastic release ---
+      let inMagneticZone = false;
       if (magneticElements?.current) {
         for (const { element, strength } of magneticElements.current) {
           if (!element) continue;
@@ -88,39 +105,123 @@ export default function CustomCursor() {
           const dist = Math.hypot(targetX - centerX, targetY - centerY);
 
           if (dist < MAGNETIC_THRESHOLD) {
+            inMagneticZone = true;
             const pull = (1 - dist / MAGNETIC_THRESHOLD) * strength;
-            targetX += (centerX - targetX) * pull;
-            targetY += (centerY - targetY) * pull;
+            const offsetX = (centerX - targetX) * pull;
+            const offsetY = (centerY - targetY) * pull;
+            magneticOffset.current = { x: offsetX, y: offsetY };
+            targetX += offsetX;
+            targetY += offsetY;
           }
         }
       }
 
-      // Lerp positions
-      outerPos.current.x += (targetX - outerPos.current.x) * 0.12;
-      outerPos.current.y += (targetY - outerPos.current.y) * 0.12;
-      innerPos.current.x += (targetX - innerPos.current.x) * 0.25;
-      innerPos.current.y += (targetY - innerPos.current.y) * 0.25;
+      if (!inMagneticZone && wasInMagneticZone.current) {
+        magneticOffset.current.x *= 1 - MAGNETIC_RELEASE_LERP;
+        magneticOffset.current.y *= 1 - MAGNETIC_RELEASE_LERP;
+        if (
+          Math.abs(magneticOffset.current.x) > 0.1 ||
+          Math.abs(magneticOffset.current.y) > 0.1
+        ) {
+          targetX += magneticOffset.current.x;
+          targetY += magneticOffset.current.y;
+        } else {
+          magneticOffset.current = { x: 0, y: 0 };
+          wasInMagneticZone.current = false;
+        }
+      }
+      if (inMagneticZone) wasInMagneticZone.current = true;
 
-      // Slow rotation: 15-second cycle for a premium, subtle feel
-      rotation.current += 360 / (15 * 60);
-      if (rotation.current >= 405) rotation.current = 45;
+      // --- Lerp container position ---
+      containerPos.current.x += (targetX - containerPos.current.x) * 0.15;
+      containerPos.current.y += (targetY - containerPos.current.y) * 0.15;
 
-      const clickScale = clicking.current ? 0.85 : 1;
+      // --- Determine if on target ---
+      const el = targetElement?.current;
+      const type = cursorTypeRef.current;
+      const isOnTarget = el && type !== "default" && type !== "text";
 
-      // Update outer reticle DOM
-      if (outerRef.current) {
-        const size = outerRef.current.offsetWidth;
-        outerRef.current.style.transform = `translate(${outerPos.current.x - size / 2}px, ${outerPos.current.y - size / 2}px) scale(${clickScale}) rotate(${rotation.current}deg)`;
+      // --- Corner targets ---
+      let cornerTargets;
+      if (isOnTarget) {
+        const rect = el.getBoundingClientRect();
+        const cx = containerPos.current.x;
+        const cy = containerPos.current.y;
+        cornerTargets = [
+          { x: rect.left - cx - BORDER_WIDTH, y: rect.top - cy - BORDER_WIDTH },
+          { x: rect.right - cx + BORDER_WIDTH - CORNER_SIZE, y: rect.top - cy - BORDER_WIDTH },
+          { x: rect.right - cx + BORDER_WIDTH - CORNER_SIZE, y: rect.bottom - cy + BORDER_WIDTH - CORNER_SIZE },
+          { x: rect.left - cx - BORDER_WIDTH, y: rect.bottom - cy + BORDER_WIDTH - CORNER_SIZE },
+        ];
+
+        // Parallax offset within target
+        const rectCenterX = rect.left + rect.width / 2;
+        const rectCenterY = rect.top + rect.height / 2;
+        const px = (mousePos.current.x - rectCenterX) * PARALLAX_STRENGTH * 1000;
+        const py = (mousePos.current.y - rectCenterY) * PARALLAX_STRENGTH * 1000;
+        for (let i = 0; i < 4; i++) {
+          cornerTargets[i] = {
+            x: cornerTargets[i].x + px,
+            y: cornerTargets[i].y + py,
+          };
+        }
+      } else {
+        cornerTargets = DEFAULT_OFFSETS;
       }
 
-      // Update inner dot DOM
-      if (innerRef.current) {
-        innerRef.current.style.transform = `translate(${innerPos.current.x - 3}px, ${innerPos.current.y - 3}px)`;
+      // --- Lerp corner offsets ---
+      const cornerSpeed = isOnTarget ? 0.12 : 0.18;
+      for (let i = 0; i < 4; i++) {
+        cornerOffsets.current[i].x +=
+          (cornerTargets[i].x - cornerOffsets.current[i].x) * cornerSpeed;
+        cornerOffsets.current[i].y +=
+          (cornerTargets[i].y - cornerOffsets.current[i].y) * cornerSpeed;
       }
 
-      // Update label position
+      // --- Rotation: spins when idle, lerps to 0 when on target ---
+      if (isOnTarget) {
+        // Smoothly reset rotation to 0 so corners align with target rect
+        rotation.current += (0 - rotation.current) * 0.12;
+        if (Math.abs(rotation.current) < 0.5) rotation.current = 0;
+      } else {
+        rotation.current += 360 / (SPIN_DURATION * 60);
+        if (rotation.current >= 360) rotation.current -= 360;
+      }
+
+      // --- Click: container 0.9, dot 0.7 ---
+      const targetContainerScale = clicking.current ? 0.9 : 1;
+      const targetDotScale = clicking.current ? 0.7 : 1;
+      containerScale.current +=
+        (targetContainerScale - containerScale.current) * 0.18;
+      dotScaleVal.current +=
+        (targetDotScale - dotScaleVal.current) * 0.18;
+
+      // --- Dot opacity: fade out when on target ---
+      const targetDotOpacity = isOnTarget ? 0 : 1;
+      dotOpacity.current += (targetDotOpacity - dotOpacity.current) * 0.15;
+
+      // --- Update container DOM ---
+      if (containerRef.current) {
+        containerRef.current.style.transform = `translate(${containerPos.current.x}px, ${containerPos.current.y}px) rotate(${rotation.current}deg) scale(${containerScale.current})`;
+      }
+
+      // --- Update each corner ---
+      for (let i = 0; i < 4; i++) {
+        const ref = cornerRefs.current[i];
+        if (!ref) continue;
+        const o = cornerOffsets.current[i];
+        ref.style.transform = `translate(${o.x}px, ${o.y}px)`;
+      }
+
+      // --- Update dot ---
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate(-50%, -50%) scale(${dotScaleVal.current})`;
+        dotRef.current.style.opacity = dotOpacity.current;
+      }
+
+      // --- Update label ---
       if (labelRef.current) {
-        labelRef.current.style.transform = `translate(${outerPos.current.x}px, ${outerPos.current.y}px) translate(-50%, -50%)`;
+        labelRef.current.style.transform = "translate(-50%, -50%)";
       }
 
       rafId.current = requestAnimationFrame(animate);
@@ -142,69 +243,100 @@ export default function CustomCursor() {
       window.removeEventListener("mouseup", handleMouseUp);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [magneticElements]);
+  }, [magneticElements, targetElement]);
 
   if (isMobile) return null;
 
-  const size = CURSOR_SIZES[cursorType] || 32;
-  const blendMode = BLEND_MODES[cursorType] || "normal";
-  const showDot = cursorType === "default";
   const showLabel = cursorType === "project";
 
   return (
-    <>
-      {/* Outer spinning reticle */}
+    <div
+      ref={containerRef}
+      className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block"
+      style={{
+        width: 0,
+        height: 0,
+        opacity: 0,
+        mixBlendMode: "difference",
+        willChange: "transform",
+      }}
+    >
+      {/* Center dot: 4px white circle */}
       <div
-        ref={outerRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:flex items-center justify-center"
+        ref={dotRef}
+        className="absolute left-1/2 top-1/2 rounded-full bg-white"
         style={{
-          width: size,
-          height: size,
-          opacity: 0,
-          mixBlendMode: blendMode,
-          transition: "width 0.3s ease, height 0.3s ease, mix-blend-mode 0.3s ease",
-          willChange: "transform",
+          width: 4,
+          height: 4,
+          willChange: "transform, opacity",
         }}
-      >
-        <svg
-          viewBox="0 0 32 32"
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
-          className="w-full h-full"
-        >
-          {/* Shortened corners for wider gap */}
-          <path d="M 2 8 L 2 2 L 8 2" />
-          <path d="M 24 2 L 30 2 L 30 8" />
-          <path d="M 30 24 L 30 30 L 24 30" />
-          <path d="M 8 30 L 2 30 L 2 24" />
-        </svg>
-      </div>
+      />
 
-      {/* Inner dot */}
+      {/* TL corner: top + left borders */}
       <div
-        ref={innerRef}
-        className="fixed top-0 left-0 rounded-full bg-white pointer-events-none z-[9999] hidden md:block"
+        ref={(el) => (cornerRefs.current[0] = el)}
+        className="absolute left-1/2 top-1/2"
         style={{
-          width: 6,
-          height: 6,
-          opacity: showDot ? 1 : 0,
-          mixBlendMode: blendMode,
-          transition: "opacity 0.2s ease",
+          width: CORNER_SIZE,
+          height: CORNER_SIZE,
+          borderWidth: `${BORDER_WIDTH}px ${0}px ${0}px ${BORDER_WIDTH}px`,
+          borderStyle: "solid",
+          borderColor: "white",
           willChange: "transform",
         }}
       />
 
-      {/* Cursor label (for project hover) */}
+      {/* TR corner: top + right borders */}
+      <div
+        ref={(el) => (cornerRefs.current[1] = el)}
+        className="absolute left-1/2 top-1/2"
+        style={{
+          width: CORNER_SIZE,
+          height: CORNER_SIZE,
+          borderWidth: `${BORDER_WIDTH}px ${BORDER_WIDTH}px ${0}px ${0}px`,
+          borderStyle: "solid",
+          borderColor: "white",
+          willChange: "transform",
+        }}
+      />
+
+      {/* BR corner: bottom + right borders */}
+      <div
+        ref={(el) => (cornerRefs.current[2] = el)}
+        className="absolute left-1/2 top-1/2"
+        style={{
+          width: CORNER_SIZE,
+          height: CORNER_SIZE,
+          borderWidth: `${0}px ${BORDER_WIDTH}px ${BORDER_WIDTH}px ${0}px`,
+          borderStyle: "solid",
+          borderColor: "white",
+          willChange: "transform",
+        }}
+      />
+
+      {/* BL corner: bottom + left borders */}
+      <div
+        ref={(el) => (cornerRefs.current[3] = el)}
+        className="absolute left-1/2 top-1/2"
+        style={{
+          width: CORNER_SIZE,
+          height: CORNER_SIZE,
+          borderWidth: `${0}px ${0}px ${BORDER_WIDTH}px ${BORDER_WIDTH}px`,
+          borderStyle: "solid",
+          borderColor: "white",
+          willChange: "transform",
+        }}
+      />
+
+      {/* Cursor label for project hover */}
       {showLabel && (
         <div
           ref={labelRef}
-          className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:flex items-center justify-center"
+          className="absolute left-1/2 top-1/2 flex items-center justify-center"
           style={{
-            width: size,
-            height: size,
+            width: 80,
+            height: 80,
             willChange: "transform",
-            mixBlendMode: "difference",
           }}
         >
           <span className="text-white text-xs font-medium uppercase tracking-wider">
@@ -212,6 +344,6 @@ export default function CustomCursor() {
           </span>
         </div>
       )}
-    </>
+    </div>
   );
 }

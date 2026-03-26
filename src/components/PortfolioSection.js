@@ -8,7 +8,7 @@ import SectionReveal from "./SectionReveal";
 import { useCursor } from "@/lib/CursorContext";
 
 function ProjectCard({ project, index }) {
-  const { setCursorType } = useCursor();
+  const { setCursorType, targetElement } = useCursor();
   const [animationData, setAnimationData] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const cardRef = useRef(null);
@@ -41,6 +41,7 @@ function ProjectCard({ project, index }) {
     e.currentTarget.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px)";
     e.currentTarget.style.transition = "transform 0.5s ease";
     setCursorType("default");
+    targetElement.current = null;
   };
 
   // Mobile: touch-driven 3D tilt
@@ -76,7 +77,7 @@ function ProjectCard({ project, index }) {
       }}
       whileTap={{ scale: 0.97 }}
       onMouseMove={!isMobile ? handleCardMouseMove : undefined}
-      onMouseEnter={!isMobile ? () => setCursorType("project") : undefined}
+      onMouseEnter={!isMobile ? (e) => { setCursorType("project"); targetElement.current = e.currentTarget; } : undefined}
       onMouseLeave={!isMobile ? handleCardMouseLeave : undefined}
       onTouchMove={isMobile ? handleTouchMove : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}

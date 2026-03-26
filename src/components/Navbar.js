@@ -39,6 +39,14 @@ export default function Navbar() {
 
         <div className="flex items-center gap-8">
           <a
+            href="/play"
+            className="relative group text-sm text-accent-muted hover:text-white active:text-white transition-colors"
+            {...linkHover}
+          >
+            [PLAY]
+            <span className="absolute -bottom-1 left-0 h-px bg-accent origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+          </a>
+          <a
             href={siteConfig.resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
