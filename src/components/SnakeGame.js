@@ -267,10 +267,9 @@ export default function SnakeGame() {
       scoreRef.current += 10;
       setScore(scoreRef.current);
       food.current = randomFood(snake.current);
-      // Speed up slightly every 50 points
-      if (scoreRef.current % 50 === 0) {
-        setSpeed((s) => Math.max(60, s - 10));
-      }
+      // Slow down as the snake grows — interval increases per segment, capped
+      const nextSpeed = Math.min(260, 120 + (snake.current.length - 1) * 8);
+      setSpeed(nextSpeed);
     } else {
       snake.current.pop();
     }
