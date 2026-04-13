@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { sEat, sDie } from "@/lib/sound";
 
 const CELL_SIZE = 20;
 const GRID_W = 25;
@@ -253,6 +254,7 @@ export default function SnakeGame() {
 
     // Self collision (only way to die)
     if (snake.current.some((s) => s.x === newHead.x && s.y === newHead.y)) {
+      sDie();
       endGame();
       return;
     }
@@ -261,6 +263,7 @@ export default function SnakeGame() {
 
     // Eat food
     if (newHead.x === food.current.x && newHead.y === food.current.y) {
+      sEat();
       scoreRef.current += 10;
       setScore(scoreRef.current);
       food.current = randomFood(snake.current);
@@ -349,6 +352,11 @@ export default function SnakeGame() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [gameState, startGame, togglePause]);
 
+  const handleDpad = (dir) => {
+    if (gameState === "idle" || gameState === "over") startGame();
+    dirQueue.current.push(dir);
+  };
+
   // Touch/swipe controls for mobile
   const touchStart = useRef(null);
   const handleTouchStart = (e) => {
@@ -409,7 +417,8 @@ export default function SnakeGame() {
           ref={canvasRef}
           width={CANVAS_W}
           height={CANVAS_H}
-          className="block"
+          className="block w-full h-full"
+          style={{ touchAction: "none" }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         />
@@ -466,23 +475,24 @@ export default function SnakeGame() {
       </div>
 
       {/* Mobile D-pad */}
-      <div className="md:hidden grid grid-cols-3 gap-2 w-36">
+      <div className="md:hidden grid grid-cols-3 gap-2 w-36" style={{ touchAction: "manipulation" }}>
         <div />
         <button
-          onTouchStart={() => dirQueue.current.push({ x: 0, y: -1 })}
+          onTouchStart={(e) => { e.preventDefault(); handleDpad({ x: 0, y: -1 }); }}
           className="h-12 border border-border rounded flex items-center justify-center text-accent-muted active:bg-dark-tertiary active:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 2 L8 14 M3 7 L8 2 L13 7" /></svg>
         </button>
         <div />
         <button
-          onTouchStart={() => dirQueue.current.push({ x: -1, y: 0 })}
+          onTouchStart={(e) => { e.preventDefault(); handleDpad({ x: -1, y: 0 }); }}
           className="h-12 border border-border rounded flex items-center justify-center text-accent-muted active:bg-dark-tertiary active:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 8 L14 8 M7 3 L2 8 L7 13" /></svg>
         </button>
         <button
-          onTouchStart={() => {
+          onTouchStart={(e) => {
+            e.preventDefault();
             if (gameState === "idle" || gameState === "over") startGame();
             else togglePause();
           }}
@@ -491,14 +501,14 @@ export default function SnakeGame() {
           {gameState === "playing" ? "||" : "GO"}
         </button>
         <button
-          onTouchStart={() => dirQueue.current.push({ x: 1, y: 0 })}
+          onTouchStart={(e) => { e.preventDefault(); handleDpad({ x: 1, y: 0 }); }}
           className="h-12 border border-border rounded flex items-center justify-center text-accent-muted active:bg-dark-tertiary active:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 8 L14 8 M9 3 L14 8 L9 13" /></svg>
         </button>
         <div />
         <button
-          onTouchStart={() => dirQueue.current.push({ x: 0, y: 1 })}
+          onTouchStart={(e) => { e.preventDefault(); handleDpad({ x: 0, y: 1 }); }}
           className="h-12 border border-border rounded flex items-center justify-center text-accent-muted active:bg-dark-tertiary active:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 2 L8 14 M3 9 L8 14 L13 9" /></svg>
