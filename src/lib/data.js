@@ -5,7 +5,7 @@ export const siteConfig = {
   title: "Full Stack Developer",
   tagline:
     "I'm a Full Stack Developer, passionate about solving real-world problems through clean and efficient code.",
-  resumeUrl: "/files/resume.pdf",
+  resumeUrl: "/files/Abishek_Bose_Full_Stack_Developer.pdf",
   email: "abishekbose1355@gmail.com",
   socials: {
     linkedin: "https://www.linkedin.com/in/abishekbose5",
