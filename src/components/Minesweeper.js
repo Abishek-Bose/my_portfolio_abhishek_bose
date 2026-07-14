@@ -2,17 +2,20 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sReveal, sFlag, sBoom, sMineWin } from "@/lib/sound";
+import { usePersistentNumber } from "@/lib/usePersistentNumber";
 
 const ROWS = 10;
 const COLS = 10;
 const MINES = 15;
 
+// Low counts sit in the brand ramp, high counts escalate into warning hues —
+// adjacent numbers must stay tellable apart at a glance, so hue moves every step.
 const NUM_COLORS = {
-  1: "#c9a96e",
-  2: "#e0c080",
-  3: "#f5d89c",
-  4: "#ffa94d",
-  5: "#ff8c5a",
+  1: "#57c122",
+  2: "#9bd419",
+  3: "#e9f52b",
+  4: "#ffc53d",
+  5: "#ff9f45",
   6: "#ff6b6b",
   7: "#ff5577",
   8: "#ff4499",
@@ -118,15 +121,10 @@ export default function Minesweeper() {
   const [gameState, setGameState] = useState("playing"); // playing | won | lost
   const [flagsLeft, setFlagsLeft] = useState(MINES);
   const [elapsed, setElapsed] = useState(0);
-  const [best, setBest] = useState(null);
+  const [best, setBest] = usePersistentNumber("minesweeper-best", null);
   const startTime = useRef(null);
   const longPressTimer = useRef(null);
   const longPressFired = useRef(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("minesweeper-best");
-    if (saved) setBest(parseInt(saved, 10));
-  }, []);
 
   // Timer
   useEffect(() => {
@@ -178,13 +176,12 @@ export default function Minesweeper() {
           setElapsed(t);
           if (best === null || t < best) {
             setBest(t);
-            localStorage.setItem("minesweeper-best", String(t));
           }
         }
         return next;
       });
     },
-    [gameState, started, best]
+    [gameState, started, best, setBest]
   );
 
   const toggleFlag = useCallback(
@@ -268,14 +265,14 @@ export default function Minesweeper() {
           {board.flat().map((cell) => {
             const { r, c, revealed, flagged, mine, neighbors } = cell;
             const exploded = cell.exploded;
-            const numColor = NUM_COLORS[neighbors] || "#c9a96e";
+            const numColor = NUM_COLORS[neighbors] || "#57c122";
             const base =
               "flex items-center justify-center rounded-[3px] font-mono font-bold select-none transition-colors";
             const bg = revealed
               ? exploded
                 ? "bg-red-900/60"
                 : "bg-dark"
-              : "bg-dark-tertiary hover:bg-[#1e1e1e]";
+              : "bg-dark-tertiary hover:bg-border";
 
             return (
               <button
@@ -299,7 +296,7 @@ export default function Minesweeper() {
                     ? neighbors
                     : ""
                   : flagged
-                  ? <span style={{ color: "#c9a96e" }}>⚑</span>
+                  ? <span style={{ color: "#e9f52b" }}>⚑</span>
                   : ""}
               </button>
             );

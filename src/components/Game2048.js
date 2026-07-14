@@ -2,26 +2,30 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sSlide, sMerge, s2048Lose, s2048Win } from "@/lib/sound";
+import { usePersistentNumber } from "@/lib/usePersistentNumber";
 
 const SIZE = 4;
 
+// Value ramp climbs the brand: near-ink → forest → spring green → acid citron.
+// Low tiles stay quiet so the board reads calm; 2048 lands on the brightest
+// color in the system, so the win tile is the loudest thing on screen.
 const TILE_COLORS = {
-  0: { bg: "#161616", fg: "transparent" },
-  2: { bg: "#1f1c16", fg: "#e8e6e3" },
-  4: { bg: "#2a2519", fg: "#e8e6e3" },
-  8: { bg: "#3a2f1c", fg: "#f5f0e8" },
-  16: { bg: "#4a3820", fg: "#f5f0e8" },
-  32: { bg: "#5c4422", fg: "#fff" },
-  64: { bg: "#6e5024", fg: "#fff" },
-  128: { bg: "#835d26", fg: "#fff" },
-  256: { bg: "#9a6c28", fg: "#fff" },
-  512: { bg: "#b37b2a", fg: "#fff" },
-  1024: { bg: "#c9a96e", fg: "#0c0c0c" },
-  2048: { bg: "#e0c080", fg: "#0c0c0c" },
-  4096: { bg: "#f5d89c", fg: "#0c0c0c" },
+  0: { bg: "#121218", fg: "transparent" },
+  2: { bg: "#151d17", fg: "#c9d2c4" },
+  4: { bg: "#18271c", fg: "#d7dfd2" },
+  8: { bg: "#173420", fg: "#e7efe2" },
+  16: { bg: "#16452a", fg: "#eaf3e5" },
+  32: { bg: "#0f5c39", fg: "#ffffff" },
+  64: { bg: "#0a8a58", fg: "#ffffff" },
+  128: { bg: "#1aa34a", fg: "#060609" },
+  256: { bg: "#35b534", fg: "#060609" },
+  512: { bg: "#57c122", fg: "#060609" },
+  1024: { bg: "#9bd419", fg: "#060609" },
+  2048: { bg: "#e9f52b", fg: "#060609" },
+  4096: { bg: "#f3fa7a", fg: "#060609" },
 };
 
-const tileColor = (v) => TILE_COLORS[v] || { bg: "#f5d89c", fg: "#0c0c0c" };
+const tileColor = (v) => TILE_COLORS[v] || { bg: "#f3fa7a", fg: "#060609" };
 const fontSize = (v) => {
   if (v >= 1024) return "clamp(0.9rem, 4.5vw, 1.5rem)";
   if (v >= 128) return "clamp(1rem, 5vw, 1.75rem)";
@@ -123,22 +127,14 @@ const startBoard = () => addRandomTile(addRandomTile(emptyBoard()));
 export default function Game2048() {
   const [board, setBoard] = useState(startBoard);
   const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
+  const [best, setBest] = usePersistentNumber("2048-best", 0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const touchStart = useRef(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("2048-best");
-    if (saved) setBest(parseInt(saved, 10));
-  }, []);
-
-  useEffect(() => {
-    if (score > best) {
-      setBest(score);
-      localStorage.setItem("2048-best", String(score));
-    }
-  }, [score, best]);
+    if (score > best) setBest(score);
+  }, [score, best, setBest]);
 
   const tryMove = useCallback(
     (dir) => {
@@ -244,7 +240,7 @@ export default function Game2048() {
                   background: bg,
                   color: fg,
                   fontSize: fontSize(value),
-                  fontFamily: "var(--font-geist-mono), monospace",
+                  fontFamily: "var(--font-jetbrains-mono), monospace",
                 }}
               >
                 {value !== 0 && value}

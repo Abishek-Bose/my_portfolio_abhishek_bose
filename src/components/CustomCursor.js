@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useCursor } from "@/lib/CursorContext";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 const CORNER_SIZE = 12;
 const BORDER_WIDTH = 3;
@@ -20,7 +21,7 @@ const DEFAULT_OFFSETS = [
 ];
 
 export default function CustomCursor() {
-  const { cursorType, targetElement, magneticElements } = useCursor();
+  const { cursorType, targetElementRef, magneticElementsRef } = useCursor();
   const containerRef = useRef(null);
   const cornerRefs = useRef([null, null, null, null]);
   const dotRef = useRef(null);
@@ -44,7 +45,7 @@ export default function CustomCursor() {
   const magneticOffset = useRef({ x: 0, y: 0 });
   const wasInMagneticZone = useRef(false);
 
-  const [isMobile, setIsMobile] = useState(true);
+  const isMobile = useIsMobile();
 
   const cursorTypeRef = useRef(cursorType);
   useEffect(() => {
@@ -52,12 +53,7 @@ export default function CustomCursor() {
   }, [cursorType]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.innerWidth < 768) {
-      setIsMobile(true);
-      return;
-    }
-    setIsMobile(false);
+    if (isMobile) return;
 
     const handleMouseMove = (e) => {
       mousePos.current = { x: e.clientX, y: e.clientY };
@@ -96,8 +92,8 @@ export default function CustomCursor() {
 
       // --- Magnetic pull with elastic release ---
       let inMagneticZone = false;
-      if (magneticElements?.current) {
-        for (const { element, strength } of magneticElements.current) {
+      if (magneticElementsRef?.current) {
+        for (const { element, strength } of magneticElementsRef.current) {
           if (!element) continue;
           const rect = element.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
@@ -137,7 +133,7 @@ export default function CustomCursor() {
       containerPos.current.y += (targetY - containerPos.current.y) * 0.15;
 
       // --- Determine if on target ---
-      const el = targetElement?.current;
+      const el = targetElementRef?.current;
       const type = cursorTypeRef.current;
       const isOnTarget = el && type !== "default" && type !== "text";
 
@@ -243,7 +239,7 @@ export default function CustomCursor() {
       window.removeEventListener("mouseup", handleMouseUp);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [magneticElements, targetElement]);
+  }, [isMobile, magneticElementsRef, targetElementRef]);
 
   if (isMobile) return null;
 

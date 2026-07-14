@@ -2,9 +2,16 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { siteConfig } from "@/lib/data";
 import { useCursorHover } from "@/lib/CursorContext";
+import { useIsMobile, useMediaQuery } from "@/lib/useMediaQuery";
+
+// The Spline runtime is a ~1.9MB WebGL bundle that touches `window` on import,
+// so it stays out of the server render and off the initial client bundle. The
+// decision to render it is made below, BEFORE this import is triggered.
+const HeroSpline = dynamic(() => import("./HeroSpline"), { ssr: false });
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -28,8 +35,14 @@ export default function HeroSection() {
   const nameRef = useRef(null);
   const spotlightRef = useRef(null);
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const linkHover = useCursorHover("link");
+
+  // Gate here, not inside HeroSpline: the check must sit outside the dynamic
+  // import, or the 1.9MB runtime downloads and then renders nothing. Shown on
+  // mobile too (by request — it costs phones that 1.9MB); reduced-motion opts out.
+  const showSpline = !reducedMotion;
 
   // Scroll-based parallax for mobile
   const { scrollYProgress } = useScroll({
@@ -38,12 +51,6 @@ export default function HeroSection() {
   });
   const scrollParallaxY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const scrollOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
-  // Detect mobile
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setIsMobile(window.innerWidth < 768);
-  }, []);
 
   // Desktop: mouse tracking
   const handleMouseMove = useCallback((e) => {
@@ -56,7 +63,7 @@ export default function HeroSection() {
     if (spotlightRef.current) {
       const localX = e.clientX - rect.left;
       const localY = e.clientY - rect.top;
-      spotlightRef.current.style.background = `radial-gradient(600px circle at ${localX}px ${localY}px, rgba(201,169,110,0.04), transparent 70%)`;
+      spotlightRef.current.style.background = `radial-gradient(600px circle at ${localX}px ${localY}px, rgba(87,193,34,0.05), transparent 70%)`;
     }
   }, []);
 
@@ -67,11 +74,9 @@ export default function HeroSection() {
     }
   }, []);
 
-  // Mobile: device orientation (gyroscope) parallax
+  // Desktop drives parallax from the pointer; mobile from the gyroscope.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (window.innerWidth >= 768) {
+    if (!isMobile) {
       const section = sectionRef.current;
       if (!section) return;
       section.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -82,7 +87,6 @@ export default function HeroSection() {
       };
     }
 
-    // Mobile gyroscope
     const handleOrientation = (e) => {
       const x = Math.max(-1, Math.min(1, (e.gamma || 0) / 30));
       const y = Math.max(-1, Math.min(1, (e.beta || 0) / 30));
@@ -93,7 +97,7 @@ export default function HeroSection() {
     return () => {
       window.removeEventListener("deviceorientation", handleOrientation);
     };
-  }, [handleMouseMove, handleMouseLeave]);
+  }, [isMobile, handleMouseMove, handleMouseLeave]);
 
   const displayName = siteConfig.heroName?.toUpperCase() || "ABHISHEK";
 
@@ -103,13 +107,16 @@ export default function HeroSection() {
       className="min-h-screen flex flex-col justify-center px-6 md:px-12 relative overflow-hidden"
     >
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0c0c0c] via-[#0c0c0c] to-[#0f0f0f]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink via-ink to-dark-secondary" />
 
       {/* Spotlight — desktop only */}
       <div
         ref={spotlightRef}
         className="absolute inset-0 pointer-events-none z-[1] hidden md:block"
       />
+
+      {/* 3D scene — sits above the gradient, below the copy */}
+      {showSpline && <HeroSpline />}
 
       <motion.div
         variants={containerVariants}

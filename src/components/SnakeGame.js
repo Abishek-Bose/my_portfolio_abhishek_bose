@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { sEat, sDie } from "@/lib/sound";
+import { usePersistentNumber } from "@/lib/usePersistentNumber";
 
 const CELL_SIZE = 20;
 const GRID_W = 25;
@@ -21,16 +22,20 @@ const DIRECTIONS = {
 };
 
 const COLORS = {
-  bg: "#0f0f0f",
-  grid: "#1a1a1a",
-  snake: "#c9a96e",
-  snakeHead: "#e0c080",
-  food: "#c9a96e",
-  foodGlow: "rgba(201, 169, 110, 0.3)",
+  bg: "#0b0b10",
+  grid: "#16161d",
+  snake: "#57c122",
+  snakeHead: "#9bd419",
+  food: "#e53e3e",
+  foodGlow: "rgba(220, 50, 50, 0.3)",
   text: "#ffffff",
-  muted: "#6b6b6b",
-  border: "#1e1e1e",
+  muted: "#8a8a93",
+  border: "#1e1e26",
 };
+
+// Body gradient runs head → tail: yellow-green (brand-2) down into forest (brand-deep).
+const SNAKE_HEAD_RGB = [155, 212, 25];
+const SNAKE_TAIL_RGB = [10, 138, 88];
 
 function randomFood(snake) {
   let pos;
@@ -50,19 +55,13 @@ export default function SnakeGame() {
 
   const [gameState, setGameState] = useState("idle"); // idle | playing | paused | over
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(0);
+  const [highScore, setHighScore] = usePersistentNumber("snake-highscore", 0);
   const [speed, setSpeed] = useState(120);
 
   const snake = useRef([{ x: 15, y: 15 }]);
   const direction = useRef({ x: 1, y: 0 });
   const food = useRef({ x: 20, y: 15 });
   const scoreRef = useRef(0);
-
-  // Load high score from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("snake-highscore");
-    if (saved) setHighScore(parseInt(saved, 10));
-  }, []);
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -146,8 +145,8 @@ export default function SnakeGame() {
 
       // Gradient from head color to darker tail
       const t = segs.length > 1 ? i / (segs.length - 1) : 0;
-      const headR = 224, headG = 192, headB = 128; // #e0c080
-      const tailR = 140, tailG = 120, tailB = 70;
+      const [headR, headG, headB] = SNAKE_HEAD_RGB;
+      const [tailR, tailG, tailB] = SNAKE_TAIL_RGB;
       const cr = Math.round(headR + (tailR - headR) * t);
       const cg = Math.round(headG + (tailG - headG) * t);
       const cb = Math.round(headB + (tailB - headB) * t);
@@ -222,7 +221,7 @@ export default function SnakeGame() {
         ctx.fill();
 
         // Pupils (shifted toward direction)
-        ctx.fillStyle = "#1a1a1a";
+        ctx.fillStyle = "#060609";
         ctx.beginPath();
         ctx.arc(ex1 + dir.x * pupilRadius * 0.5, ey1 + dir.y * pupilRadius * 0.5, pupilRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -232,6 +231,15 @@ export default function SnakeGame() {
       }
     });
   }, []);
+
+  const endGame = useCallback(() => {
+    clearInterval(gameLoop.current);
+    gameLoop.current = null;
+    setGameState("over");
+    if (scoreRef.current > highScore) {
+      setHighScore(scoreRef.current);
+    }
+  }, [highScore, setHighScore]);
 
   const tick = useCallback(() => {
     // Process direction queue
@@ -275,17 +283,7 @@ export default function SnakeGame() {
     }
 
     draw();
-  }, [draw]);
-
-  const endGame = useCallback(() => {
-    clearInterval(gameLoop.current);
-    gameLoop.current = null;
-    setGameState("over");
-    if (scoreRef.current > highScore) {
-      setHighScore(scoreRef.current);
-      localStorage.setItem("snake-highscore", String(scoreRef.current));
-    }
-  }, [highScore]);
+  }, [draw, endGame]);
 
   const startGame = useCallback(() => {
     snake.current = [{ x: 15, y: 15 }];

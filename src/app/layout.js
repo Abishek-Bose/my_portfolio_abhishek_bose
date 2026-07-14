@@ -1,17 +1,19 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import CustomCursor from "@/components/CustomCursor";
 import ClientProviders from "@/components/ClientProviders";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -50,9 +52,14 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      // globals.css sets `scroll-behavior: smooth` for in-page anchors. Next 16
+      // no longer overrides that on route changes, so navigations would
+      // smooth-scroll to the top instead of jumping. This opts back into
+      // instant-scroll-on-navigation without losing smooth in-page anchors.
+      data-scroll-behavior="smooth"
+      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
     >
-      <body className="bg-[#0c0c0c] text-white min-h-screen">
+      <body className="bg-ink text-white min-h-screen">
         <ClientProviders>
           <CustomCursor />
           <Navbar />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import SectionReveal from "./SectionReveal";
 import { useCursorHover, useMagnetic } from "@/lib/CursorContext";
+import { revealViewport } from "@/lib/reveal";
 
 const countryCodes = [
   { code: "+91", country: "IN", flag: "\u{1F1EE}\u{1F1F3}" },
@@ -142,7 +143,7 @@ export default function ContactSection() {
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={revealViewport(0.3)}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="space-y-8"
         >
@@ -259,7 +260,7 @@ export default function ContactSection() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="px-10 py-4 bg-accent text-[#0c0c0c] font-medium rounded-full hover:bg-accent/80 active:bg-accent/80 active:scale-95 transition-all text-sm"
+            className="px-10 py-4 bg-accent text-ink font-medium rounded-full hover:bg-accent/80 active:bg-accent/80 active:scale-95 transition-all text-sm"
             {...buttonHover}
           >
             Call me back

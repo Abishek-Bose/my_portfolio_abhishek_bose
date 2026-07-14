@@ -34,11 +34,24 @@ export const isMuted = () => {
   return muted;
 };
 
+// Lets React subscribe to the mute flag via useSyncExternalStore instead of
+// mirroring it into component state after mount.
+const muteListeners = new Set();
+
+export const subscribeMuted = (onChange) => {
+  muteListeners.add(onChange);
+  return () => muteListeners.delete(onChange);
+};
+
+export const getMutedServerSnapshot = () => false;
+
 export const setMuted = (m) => {
   muted = !!m;
+  initialized = true;
   if (typeof window !== "undefined") {
     localStorage.setItem("sound-muted", muted ? "1" : "0");
   }
+  muteListeners.forEach((fn) => fn());
 };
 
 const play = ({ freq, duration, type = "sine", volume = 0.08, sweepTo = null }) => {

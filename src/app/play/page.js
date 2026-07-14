@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Footer from "@/components/Footer";
 import SnakeGame from "@/components/SnakeGame";
 import SpaceImpact from "@/components/SpaceImpact";
 import Game2048 from "@/components/Game2048";
 import Minesweeper from "@/components/Minesweeper";
-import { isMuted, setMuted } from "@/lib/sound";
+import { isMuted, setMuted, subscribeMuted, getMutedServerSnapshot } from "@/lib/sound";
 
 const GAMES = [
   { id: "snake", label: "Snake", Component: SnakeGame },
@@ -18,18 +18,10 @@ const GAMES = [
 
 export default function PlayPage() {
   const [active, setActive] = useState("snake");
-  const [muted, setMutedState] = useState(false);
+  const muted = useSyncExternalStore(subscribeMuted, isMuted, getMutedServerSnapshot);
   const ActiveComponent = GAMES.find((g) => g.id === active).Component;
 
-  useEffect(() => {
-    setMutedState(isMuted());
-  }, []);
-
-  const toggleMute = () => {
-    const next = !muted;
-    setMuted(next);
-    setMutedState(next);
-  };
+  const toggleMute = () => setMuted(!muted);
 
   return (
     <main className="min-h-screen bg-dark text-white">

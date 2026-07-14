@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { services } from "@/lib/data";
 import SectionReveal from "./SectionReveal";
 import { useCursorHover } from "@/lib/CursorContext";
+import { revealViewport } from "@/lib/reveal";
 
 export default function ServicesSection() {
   const linkHover = useCursorHover("link");
@@ -24,13 +25,13 @@ export default function ServicesSection() {
               key={service.number}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
+              viewport={revealViewport(0.5)}
               transition={{
                 duration: 0.5,
                 delay: index * 0.1,
                 ease: "easeOut",
               }}
-              whileTap={{ scale: 0.98, backgroundColor: "rgba(15,15,15,0.5)" }}
+              whileTap={{ scale: 0.98, backgroundColor: "rgba(11,11,16,0.5)" }}
               className="group relative border-t border-border py-8 md:py-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-12 hover:bg-dark-secondary/50 active:bg-dark-secondary/50 transition-colors px-4 -mx-4 rounded-lg"
               {...linkHover}
             >

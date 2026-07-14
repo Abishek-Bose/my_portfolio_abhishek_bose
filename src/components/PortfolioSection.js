@@ -6,18 +6,14 @@ import Lottie from "lottie-react";
 import { projects } from "@/lib/data";
 import SectionReveal from "./SectionReveal";
 import { useCursor } from "@/lib/CursorContext";
+import { useIsMobile } from "@/lib/useMediaQuery";
+import { revealViewport } from "@/lib/reveal";
 
 function ProjectCard({ project, index }) {
-  const { setCursorType, targetElement } = useCursor();
+  const { setCursorType, setCursorTarget } = useCursor();
   const [animationData, setAnimationData] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const cardRef = useRef(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsMobile(window.innerWidth < 768);
-    }
-  }, []);
 
   useEffect(() => {
     if (project.animation) {
@@ -41,7 +37,7 @@ function ProjectCard({ project, index }) {
     e.currentTarget.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px)";
     e.currentTarget.style.transition = "transform 0.5s ease";
     setCursorType("default");
-    targetElement.current = null;
+    setCursorTarget(null);
   };
 
   // Mobile: touch-driven 3D tilt
@@ -69,7 +65,7 @@ function ProjectCard({ project, index }) {
       rel={project.url !== "#" ? "noopener noreferrer" : undefined}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
+      viewport={revealViewport(0.3)}
       transition={{
         duration: 0.5,
         delay: index * 0.15,
@@ -77,7 +73,7 @@ function ProjectCard({ project, index }) {
       }}
       whileTap={{ scale: 0.97 }}
       onMouseMove={!isMobile ? handleCardMouseMove : undefined}
-      onMouseEnter={!isMobile ? (e) => { setCursorType("project"); targetElement.current = e.currentTarget; } : undefined}
+      onMouseEnter={!isMobile ? (e) => { setCursorType("project"); setCursorTarget(e.currentTarget); } : undefined}
       onMouseLeave={!isMobile ? handleCardMouseLeave : undefined}
       onTouchMove={isMobile ? handleTouchMove : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}

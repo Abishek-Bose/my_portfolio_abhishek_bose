@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { siteConfig } from "@/lib/data";
 import Footer from "@/components/Footer";
 import SectionReveal from "@/components/SectionReveal";
+import { revealViewport } from "@/lib/reveal";
 
 const skills = [
   { category: "Frontend", items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML/CSS"] },
@@ -111,7 +112,7 @@ export default function AboutMe() {
                 key={skillGroup.category}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={revealViewport(0.2)}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="space-y-4"
               >
@@ -146,7 +147,7 @@ export default function AboutMe() {
                 key={exp.role + exp.company}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={revealViewport(0.2)}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="border-t border-border py-8 md:py-10 flex flex-col md:flex-row gap-4 md:gap-12"
               >

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sShoot, sEnemyHit, sPlayerHit, sSpaceOver } from "@/lib/sound";
+import { usePersistentNumber } from "@/lib/usePersistentNumber";
 
 const W = 500;
 const H = 320;
@@ -44,12 +45,7 @@ export default function SpaceImpact() {
   const [gameState, setGameState] = useState("idle"); // idle | playing | over
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-  const [highScore, setHighScore] = useState(0);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("space-impact-highscore");
-    if (saved) setHighScore(parseInt(saved, 10));
-  }, []);
+  const [highScore, setHighScore] = usePersistentNumber("space-impact-highscore", 0);
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -57,11 +53,11 @@ export default function SpaceImpact() {
     const s = stateRef.current;
 
     // Background
-    ctx.fillStyle = "#0c0c0c";
+    ctx.fillStyle = "#060609";
     ctx.fillRect(0, 0, W, H);
 
     // Stars
-    ctx.fillStyle = "#2a2519";
+    ctx.fillStyle = "#23232e";
     s.stars.forEach((star) => {
       ctx.fillRect(Math.floor(star.x), Math.floor(star.y), 1, 1);
     });
@@ -70,7 +66,7 @@ export default function SpaceImpact() {
     const blink = s.time < s.player.invincibleUntil && Math.floor(s.time / 80) % 2 === 0;
     if (!blink && s.lives > 0) {
       const { x, y } = s.player;
-      ctx.fillStyle = "#c9a96e";
+      ctx.fillStyle = "#57c122";
       ctx.fillRect(x, y + 4, 12, 6);
       ctx.fillRect(x + 6, y + 2, 10, 10);
       ctx.fillRect(x + 14, y + 5, 6, 4);
@@ -78,27 +74,27 @@ export default function SpaceImpact() {
       ctx.fillRect(x, y + 12, 4, 2);
       // Exhaust flicker
       if (Math.floor(s.time / 60) % 2 === 0) {
-        ctx.fillStyle = "#e0c080";
+        ctx.fillStyle = "#e9f52b";
         ctx.fillRect(x - 4, y + 6, 4, 2);
       }
     }
 
     // Player bullets
-    ctx.fillStyle = "#f5d89c";
+    ctx.fillStyle = "#e9f52b";
     s.bullets.forEach((b) => ctx.fillRect(b.x, b.y, BULLET_W, BULLET_H));
 
-    // Enemy bullets
+    // Enemy bullets — red stays the danger channel against the green player
     ctx.fillStyle = "#e53e3e";
     s.enemyBullets.forEach((b) => ctx.fillRect(b.x, b.y, BULLET_W, BULLET_H));
 
-    // Enemies (alien-ish pixel block)
+    // Enemies (alien-ish pixel block) — same hue family as the player, darker value
     s.enemies.forEach((e) => {
-      ctx.fillStyle = "#9a6c28";
+      ctx.fillStyle = "#0a8a58";
       ctx.fillRect(e.x + 2, e.y + 2, ENEMY_W - 4, ENEMY_H - 4);
       ctx.fillRect(e.x, e.y + 6, ENEMY_W, ENEMY_H - 12);
       ctx.fillRect(e.x + 4, e.y, ENEMY_W - 8, ENEMY_H);
       // Eye
-      ctx.fillStyle = "#0c0c0c";
+      ctx.fillStyle = "#060609";
       ctx.fillRect(e.x + 5, e.y + 7, 3, 3);
       ctx.fillRect(e.x + 10, e.y + 7, 3, 3);
     });
@@ -298,7 +294,6 @@ export default function SpaceImpact() {
             sSpaceOver();
             if (s.score > highScore) {
               setHighScore(s.score);
-              localStorage.setItem("space-impact-highscore", String(s.score));
             }
             draw();
             return;
@@ -312,7 +307,7 @@ export default function SpaceImpact() {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [gameState, highScore, draw]);
+  }, [gameState, highScore, draw, setHighScore]);
 
   // Initial draw
   useEffect(() => {

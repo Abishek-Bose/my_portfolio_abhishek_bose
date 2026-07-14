@@ -1,28 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0c0c0c;
-  --foreground: #e8e6e3;
-  --dark: #080808;
-  --dark-secondary: #0f0f0f;
-  --dark-tertiary: #161616;
-  /* Premium warm gold accent */
-  --accent: #c9a96e;
-  --accent-muted: #6b6b6b;
-  --border-color: #1e1e1e;
+  /* --- Brand ramp: forest → spring → acid --- */
+  --brand-deep: #0a8a58; /* forest */
+  --brand: #57c122; /* spring green — primary */
+  --brand-2: #9bd419; /* yellow-green */
+  --brand-3: #e9f52b; /* citron / acid — highlights only */
+
+  /* --- Ink: near-black base, faint cool cast. Neutrals derive from it. --- */
+  --ink: #060609;
+  --background: #060609;
+  --dark: #060609;
+  --dark-secondary: #0b0b10;
+  --dark-tertiary: #121218;
+  --border-color: #1e1e26;
+
+  --foreground: #e7e9ec;
+  /* 5.8:1 on ink — the old #6b6b6b sat at 3.8:1 and failed AA for body copy. */
+  --accent-muted: #8a8a93;
+
+  /* Components address the primary via --accent; the ramp above is the source. */
+  --accent: var(--brand);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
   --color-dark: var(--dark);
   --color-dark-secondary: var(--dark-secondary);
   --color-dark-tertiary: var(--dark-tertiary);
   --color-accent: var(--accent);
   --color-accent-muted: var(--accent-muted);
   --color-border: var(--border-color);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-2: var(--brand-2);
+  --color-brand-3: var(--brand-3);
+
+  --font-sans: var(--font-space-grotesk);
+  --font-display: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 html {
@@ -32,7 +51,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-space-grotesk), "Segoe UI", Arial, sans-serif;
   overflow-x: hidden;
 }
 
@@ -43,9 +62,14 @@ body {
   }
 }
 
-/* Premium text gradient — warm white to gold */
+/* Display gradient — light head falling through the ramp into spring green */
 .text-gradient-primary {
-  background: linear-gradient(180deg, #f5f0e8 0%, #c9a96e 100%);
+  background: linear-gradient(
+    180deg,
+    #f4f7ec 0%,
+    var(--brand-2) 60%,
+    var(--brand) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -54,7 +78,7 @@ body {
 
 /* Text stroke effect */
 .text-stroke {
-  -webkit-text-stroke: 1.5px rgba(201, 169, 110, 0.4);
+  -webkit-text-stroke: 1.5px rgba(87, 193, 34, 0.4);
   color: transparent;
 }
 
@@ -72,10 +96,10 @@ body {
   animation: marquee 20s linear infinite;
 }
 
-/* Selection styling — warm gold */
+/* Selection styling */
 ::selection {
-  background: rgba(201, 169, 110, 0.2);
-  color: #c9a96e;
+  background: rgba(87, 193, 34, 0.25);
+  color: var(--brand-3);
 }
 
 /* Scrollbar styling */
@@ -88,12 +112,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: #22222c;
   border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
+  background: var(--brand-deep);
 }
 
 /* Magnetic element smooth transition */
